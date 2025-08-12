@@ -14,6 +14,7 @@ import org.ninetripods.mq.study.widget.matrix.WarpImageView
  * Poly Fragment2
  */
 class SetPolyToPolyFragment2 : BaseFragment() {
+    
 
     private val warpView: WarpImageView by id(R.id.warpView)
     private val btnStart: Button by id(R.id.btn_start)
