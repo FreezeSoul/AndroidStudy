@@ -137,6 +137,12 @@ class NestedParentView @JvmOverloads constructor(
         return false
     }
 
+    /**
+     * @param target  触发fling的子View（通常是RecyclerView）
+     * @param velocityX X轴速度
+     * @param velocityY Y轴速度（关键参数）
+     * @param consumed 子View是否已经消费了这个fling
+     */
     override fun onNestedFling(
             target: View,
             velocityX: Float,
@@ -147,6 +153,9 @@ class NestedParentView @JvmOverloads constructor(
         //这里判断如果第一个元素的位置是大于TOP_CHILD_FLING_THRESHOLD的
         //认为已经被消耗，在animateScroll里不会对velocityY<0时做处理
         var consumed = consumed
+
+        //当向上快速滑动 (velocityY < 0) 且目标是 RecyclerView 时检查 RecyclerView 的第一个可见item的位置
+        //如果第一个item的位置 > TOP_CHILD_FLING_THRESHOLD（阈值=3），说明RecyclerView已经有足够的内容可以滚动,此时认为子View应该消费这个fling事件
         if (target is RecyclerView && velocityY < 0) {
             val recyclerView = target
             val firstChild = recyclerView.getChildAt(0)
