@@ -38,8 +38,11 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         } else {
             setContentView();
         }
-        initViews();
-        initEvents();
+        if (savedInstanceState == null) {
+            //Activity重启时，Fragment也会重建，savedInstanceState == null认为是第一次正常启动
+            initViews();
+            initEvents();
+        }
     }
 
     public void setContentView() {
