@@ -139,6 +139,9 @@ class PermissionRequestFragment : BaseFragment() {
         return ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
     }
 
+    /**
+     * 顶部展示权限说明Tips
+     */
     private fun addTopTipsView(activity: FragmentActivity) {
         runCatching {
             val decorView = activity.window.decorView
@@ -170,6 +173,9 @@ class PermissionRequestFragment : BaseFragment() {
         }
     }
 
+    /**
+     * 删除Tips
+     */
     private fun removeTopTipsView(activity: FragmentActivity) {
         runCatching {
             val decorView = activity.window.decorView
