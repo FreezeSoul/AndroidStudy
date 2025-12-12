@@ -160,7 +160,7 @@ class PermissionRequestFragment : BaseFragment() {
                     textSize = 16f
                     setLineSpacing(2.dp2px().toFloat(), 1f)
                     val dpLength = 12.dp2px()
-                    setPadding(dpLength)
+                    setPadding(dpLength, 18.dp2px(), dpLength, 18.dp2px())
                     val layoutParams = FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
                     )
