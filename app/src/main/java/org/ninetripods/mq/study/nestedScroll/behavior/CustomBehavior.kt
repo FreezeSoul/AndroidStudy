@@ -171,7 +171,7 @@ class CustomBehavior(
         child: View,
         dependency: View,
     ): Boolean {
-        log("layoutDependsOn(parent: $parent, child: $child, dependency)")
+        log("layoutDependsOn(parent: $parent, child: $child, dependency:$dependency)")
         return super.layoutDependsOn(parent, child, dependency)
     }
 
@@ -236,7 +236,7 @@ class CustomBehavior(
     override fun onLayoutChild(
         parent: CoordinatorLayout, child: View, layoutDirection: Int,
     ): Boolean {
-        log("onLayoutChild(parent, child, layoutDirection)")
+        log("onLayoutChild(parent:$parent, child:$child, layoutDirection:$layoutDirection)")
         if (parent.childCount < 2) return false
         val firstView = parent.getChildAt(0)
         child.layout(0, firstView.measuredHeight, child.measuredWidth, child.measuredHeight)

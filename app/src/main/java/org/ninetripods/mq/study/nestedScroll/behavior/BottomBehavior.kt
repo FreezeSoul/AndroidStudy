@@ -61,7 +61,7 @@ class BottomBehavior(
         child: View,
         layoutDirection: Int,
     ): Boolean {
-        log("bottom: onLayoutChild(layoutDirection:$layoutDirection)")
+        log("bottom: onLayoutChild(parent:$parent, child:$child, layoutDirection:$layoutDirection)")
         if (parent.childCount < 2) return false
         val firstView = parent.getChildAt(0)
         child.layout(0, firstView.measuredHeight, child.measuredWidth, child.measuredHeight)

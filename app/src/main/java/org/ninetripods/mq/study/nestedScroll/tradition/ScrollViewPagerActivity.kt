@@ -16,7 +16,7 @@ class ScrollViewPagerActivity : BaseActivity() {
     override fun initViews() {
         view_pager = findViewById<View>(R.id.view_pager) as CustomViewPager
         myPagerAdapter = MyPagerAdapter(this)
-        view_pager!!.adapter = myPagerAdapter
+        view_pager?.adapter = myPagerAdapter
     }
 
     override fun initEvents() {
