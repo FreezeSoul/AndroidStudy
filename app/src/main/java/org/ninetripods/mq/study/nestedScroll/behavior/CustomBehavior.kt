@@ -11,6 +11,8 @@ import org.ninetripods.mq.study.kotlin.ktx.log
  * 自定义Behavior必须要继承有参数的，否则会报以下错误：
  * Caused by: java.lang.RuntimeException: Could not inflate Behavior subclass org.ninetripods.mq.study.nestedScroll.behavior.CustomBehavior
  * ，因为CoordinatorLayout里是利用反射(use[CoordinatorLayout.parseBehavior]) 获取该Behavior的
+ *
+ * 推荐Behavior学习：https://juejin.cn/post/7025901197361938469
  * @param context
  * @param attrs
  */
@@ -27,6 +29,115 @@ class CustomBehavior(
     //    onNestedPreFling()、onNestedFling()、onStopNestedScroll()执行嵌套滑动
     // 二、
     // (use[CoordinatorLayout.parseBehavior])如何反射获取Behavior
+
+
+    /**
+     * 对子View的测量
+     *
+     * @param parent
+     * @param child
+     * @param parentWidthMeasureSpec
+     * @param widthUsed
+     * @param parentHeightMeasureSpec
+     * @param heightUsed
+     * @return
+     */
+    override fun onMeasureChild(
+        parent: CoordinatorLayout, child: View,
+        parentWidthMeasureSpec: Int, widthUsed: Int, parentHeightMeasureSpec: Int, heightUsed: Int,
+    ): Boolean {
+        log("onMeasureChild(parent:$parent, child:$child, parentWidthMeasureSpec:$parentWidthMeasureSpec," +
+                " widthUsed:$widthUsed, parentHeightMeasureSpec:$parentHeightMeasureSpec, heightUsed:$heightUsed)")
+        return super.onMeasureChild(parent, child,
+            parentWidthMeasureSpec, widthUsed, parentHeightMeasureSpec, heightUsed)
+    }
+
+    /**
+     * 对子View的布局 CoordinatorLayout是一个FrameLayout，所以需要自行实现对子View的布局和测量
+     *
+     * @param parent
+     * @param child
+     * @param layoutDirection
+     * @return
+     */
+    override fun onLayoutChild(
+        parent: CoordinatorLayout, child: View, layoutDirection: Int,
+    ): Boolean {
+        log("onLayoutChild(parent:$parent, child:$child, layoutDirection:$layoutDirection)")
+        if (parent.childCount < 2) return false
+        val firstView = parent.getChildAt(0)
+        child.layout(0, firstView.measuredHeight, child.measuredWidth, child.measuredHeight)
+        return true
+    }
+
+
+    /**
+     * child、dependency都是parent（CoordinatorLayout）的直接或间接子View，设置Behavior的子View和其他子View是否存在依赖关系。
+     * Behavior会遍历除child之外的其他子View，带入该方法判断是否存在依赖关系，即dependency是一直会变的且layoutDependsOn()会被执行多次。
+     * @param parent 父View
+     * @param child 设置当前Behavior的子View
+     * @param dependency 依赖的View，会一直变，直到遍历结束
+     * @return 返回true，存在依赖关系；返回false，不存在依赖关系
+     */
+    override fun layoutDependsOn(
+        parent: CoordinatorLayout,
+        child: View,
+        dependency: View,
+    ): Boolean {
+        log("layoutDependsOn(parent: $parent, child: $child, dependency:$dependency)")
+        return super.layoutDependsOn(parent, child, dependency)
+    }
+
+    /**
+     * dependency View发生变化时执行
+     * @param parent 父View
+     * @param child 设置当前Behavior的子View
+     * @param dependency 依赖的View
+     * @return child发生变化时返回true
+     */
+    override fun onDependentViewChanged(
+        parent: CoordinatorLayout,
+        child: View,
+        dependency: View,
+    ): Boolean {
+        log("onDependentViewChanged()")
+        child.y = dependency.bottom.toFloat()
+        child.x = dependency.left.toFloat()
+        return true
+    }
+
+    /**
+     * dependency View从父View中移除的时候，即child失去dependency View依赖时执行
+     * @param parent
+     * @param child
+     * @param dependency
+     */
+    override fun onDependentViewRemoved(parent: CoordinatorLayout, child: View, dependency: View) {
+        log("onDependentViewRemoved()")
+        super.onDependentViewRemoved(parent, child, dependency)
+    }
+
+    /**
+     * 是否对事件进行拦截  相当于CoordinatorLayout中的事件拦截抽离到Behavior中了
+     * @param parent 父View
+     * @param child 子View
+     * @param ev MotionEvent事件
+     */
+    override fun onInterceptTouchEvent(
+        parent: CoordinatorLayout, child: View, ev: MotionEvent,
+    ): Boolean {
+        return super.onInterceptTouchEvent(parent, child, ev)
+    }
+
+    /**
+     * 事件处理
+     * @param parent 父View
+     * @param child 子View
+     * @param ev MotionEvent事件
+     */
+    override fun onTouchEvent(parent: CoordinatorLayout, child: View, ev: MotionEvent): Boolean {
+        return super.onTouchEvent(parent, child, ev)
+    }
 
     /**
      * 对启动嵌套滚动操作的子View(ViewCompat#startNestedScroll(View, int))作出反应。
@@ -87,7 +198,7 @@ class CustomBehavior(
     }
 
     /**
-     * 前面onNestedPreScroll()执行完后，剩余事件交给子View去处理，子View执行完后，如果还有剩余，会将剩余事件又交给Behavior去滑动
+     * 前面onNestedPreScroll()执行完后，剩余事件交给子View去处理，子View执行完后，如果还有剩余，会将剩余事件又交给Behavior去滑动（第二次将事件交给父View处理）
      * @param coordinatorLayout 父View
      * @param child
      * @param target
@@ -127,7 +238,7 @@ class CustomBehavior(
     }
 
     /**
-     * 执行惯性滑动处理
+     * 子View执行完惯性滑动后，父View第二次执行惯性滑动处理
      * @param coordinatorLayout 父View
      * @param child
      * @param target
@@ -157,112 +268,4 @@ class CustomBehavior(
         log("onStopNestedScroll(coordinatorLayout:$coordinatorLayout, child:$child, target:$target, type:$type)")
         super.onStopNestedScroll(coordinatorLayout, child, target, type)
     }
-
-    /**
-     * child、dependency都是parent（CoordinatorLayout）的直接或间接子View，设置Behavior的子View和其他子View是否存在依赖关系。
-     * Behavior会遍历除child之外的其他子View，带入该方法判断是否存在依赖关系，即dependency是一直会变的且layoutDependsOn()会被执行多次。
-     * @param parent 父View
-     * @param child 设置当前Behavior的子View
-     * @param dependency 依赖的View
-     * @return 返回true，存在依赖关系；返回false，不存在依赖关系
-     */
-    override fun layoutDependsOn(
-        parent: CoordinatorLayout,
-        child: View,
-        dependency: View,
-    ): Boolean {
-        log("layoutDependsOn(parent: $parent, child: $child, dependency:$dependency)")
-        return super.layoutDependsOn(parent, child, dependency)
-    }
-
-    /**
-     * dependency View发生变化时执行
-     * @param parent 父View
-     * @param child 设置当前Behavior的子View
-     * @param dependency 依赖的View
-     * @return child发生变化时返回true
-     */
-    override fun onDependentViewChanged(
-        parent: CoordinatorLayout,
-        child: View,
-        dependency: View,
-    ): Boolean {
-        log("onDependentViewChanged()")
-        child.y = dependency.bottom.toFloat()
-        child.x = dependency.left.toFloat()
-        return true
-    }
-
-    /**
-     * dependency View从父View中移除的时候，即child失去dependency View依赖时执行
-     * @param parent
-     * @param child
-     * @param dependency
-     */
-    override fun onDependentViewRemoved(parent: CoordinatorLayout, child: View, dependency: View) {
-        log("onDependentViewRemoved()")
-        super.onDependentViewRemoved(parent, child, dependency)
-    }
-
-    /**
-     * 对子View的测量
-     *
-     * @param parent
-     * @param child
-     * @param parentWidthMeasureSpec
-     * @param widthUsed
-     * @param parentHeightMeasureSpec
-     * @param heightUsed
-     * @return
-     */
-    override fun onMeasureChild(
-        parent: CoordinatorLayout, child: View,
-        parentWidthMeasureSpec: Int, widthUsed: Int, parentHeightMeasureSpec: Int, heightUsed: Int,
-    ): Boolean {
-        log("onMeasureChild(parent:$parent, child:$child, parentWidthMeasureSpec:$parentWidthMeasureSpec," +
-                " widthUsed:$widthUsed, parentHeightMeasureSpec:$parentHeightMeasureSpec, heightUsed:$heightUsed)")
-        return super.onMeasureChild(parent, child,
-            parentWidthMeasureSpec, widthUsed, parentHeightMeasureSpec, heightUsed)
-    }
-
-    /**
-     * 对子View的布局 CoordinatorLayout是一个FrameLayout，所以需要自行实现对子View的布局和测量
-     *
-     * @param parent
-     * @param child
-     * @param layoutDirection
-     * @return
-     */
-    override fun onLayoutChild(
-        parent: CoordinatorLayout, child: View, layoutDirection: Int,
-    ): Boolean {
-        log("onLayoutChild(parent:$parent, child:$child, layoutDirection:$layoutDirection)")
-        if (parent.childCount < 2) return false
-        val firstView = parent.getChildAt(0)
-        child.layout(0, firstView.measuredHeight, child.measuredWidth, child.measuredHeight)
-        return true
-    }
-
-    /**
-     * 是否对事件进行拦截  相当于CoordinatorLayout中的事件拦截抽离到Behavior中了
-     * @param parent 父View
-     * @param child 子View
-     * @param ev MotionEvent事件
-     */
-    override fun onInterceptTouchEvent(
-        parent: CoordinatorLayout, child: View, ev: MotionEvent,
-    ): Boolean {
-        return super.onInterceptTouchEvent(parent, child, ev)
-    }
-
-    /**
-     * 事件处理
-     * @param parent 父View
-     * @param child 子View
-     * @param ev MotionEvent事件
-     */
-    override fun onTouchEvent(parent: CoordinatorLayout, child: View, ev: MotionEvent): Boolean {
-        return super.onTouchEvent(parent, child, ev)
-    }
-
 }
