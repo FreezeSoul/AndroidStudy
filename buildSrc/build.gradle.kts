@@ -1,6 +1,5 @@
 repositories {
     google()
-    jcenter()
     mavenCentral()
     maven {
         url = uri("$rootDir/spi_repo")

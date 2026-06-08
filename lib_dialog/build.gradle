@@ -18,7 +18,11 @@ android {
         }
     }
 
-    lintOptions {
+    publishing {
+        singleVariant("release")
+    }
+
+    lint {
         abortOnError false
     }
 
@@ -26,6 +30,10 @@ android {
 
 buildscript {
     repositories {
+        maven {
+            url 'https://maven.aliyun.com/repository/public'
+        }
+        google()
         mavenCentral()
     }
     dependencies {
@@ -37,6 +45,7 @@ allprojects {
     plugins.withId("com.vanniktech.maven.publish") {
         mavenPublish {
             sonatypeHost = "S01"
+            androidVariantToPublish = "release"
         }
     }
 }

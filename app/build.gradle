@@ -52,7 +52,6 @@ android {
         //配置Kotlin编译器扩展版本, 需要与 Kotlin 版本控制相关联
         //对应关系：https://developer.android.com/jetpack/androidx/releases/compose-kotlin?hl=zh-cn
         kotlinCompilerExtensionVersion compose_version
-        kotlinCompilerVersion kotlin_version  //在AGP7.0+版本上不用配置这个了
     }
 
     buildTypes {
@@ -103,17 +102,21 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
-    //修改APK生成名字  通过android.applicationVariants索引来遍历所有的 build variant
-    applicationVariants.each { variant ->
-        variant.outputs.each {
+}
+
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        variant.outputs.each { output ->
             def timeNow = getDate()
+            def versionName = output.versionName.get()
             def newName
-            if (variant.buildType.name == 'debug') {
-                newName = "android-" + timeNow + "_v${variant.versionName}-debug.apk"
+            if (variant.buildType == 'debug') {
+                newName = "android-${timeNow}_v${versionName}-debug.apk"
             } else {
-                newName = "android_${variant.flavorName}_" + timeNow + "_v${variant.versionName}_${variant.buildType.name}.apk"
+                def flavorName = variant.flavorName ?: ''
+                newName = "android_${flavorName}_${timeNow}_v${versionName}_${variant.buildType}.apk"
             }
-            output.outputFile = new File(output.outputFile.parent, newName)
+            output.outputFileName.set(newName)
         }
     }
 }
